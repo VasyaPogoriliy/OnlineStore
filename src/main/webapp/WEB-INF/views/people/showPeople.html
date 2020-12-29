@@ -6,9 +6,23 @@
 </head>
 <body>
 
-<div th:each="person : ${people}">
-    <a th:href="@{/people/{id}(id=${person.getId()})}" th:text="${person.getName()}">user</a>
-</div>
+<table border="1">
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+    </tr>
+    <div th:each="person : ${people}">
+        <tr>
+            <td>
+                <a th:href="@{/people/{id}(id=${person.getId()})}"
+                   th:text="${person.getName() + '  ' + person.getSurname()}">user</a>
+            </td>
+            <td>
+                <a th:text="${person.getEmail()}">email</a>
+            </td>
+        </tr>
+    </div>
+</table>
 
 <hr/>
 <a href="/people/new">add new</a>
