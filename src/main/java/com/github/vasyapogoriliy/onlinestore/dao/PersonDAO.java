@@ -1,6 +1,8 @@
 package com.github.vasyapogoriliy.onlinestore.dao;
 
 import com.github.vasyapogoriliy.onlinestore.models.Person;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.sql.*;
@@ -9,119 +11,36 @@ import java.util.List;
 
 @Component
 public class PersonDAO {
-    private static int PEOPLE_COUNT;
 
-    private static final String URL = "jdbc:postgresql://localhost:5432/online_store_db";
-    private static final String USERNAME = "postgres";
-    private static final String PASSWORD = "postgres";
+    private final JdbcTemplate jdbcTemplate;
 
-    private static Connection connection;
-
-    static {
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-
+    @Autowired
+    public PersonDAO(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
+
     public List<Person> showPeople() {
-        List<Person> people = new ArrayList<>();
-
-        try {
-            Statement statement = connection.createStatement();
-            String SQL = "SELECT * FROM person";
-            ResultSet resultSet = statement.executeQuery(SQL);
-
-            while (resultSet.next()) {
-                Person person = new Person();
-                person.setId(resultSet.getInt("id"));
-                person.setName(resultSet.getString("name"));
-                person.setSurname(resultSet.getString("surname"));
-                person.setEmail(resultSet.getString("email"));
-
-                people.add(person);
-            }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-
-        return people;
+        return jdbcTemplate.query("SELECT * FROM person", new PersonMapper());
     }
 
     public Person showPerson(int id) {
-        Person person = null;
-        try {
-            PreparedStatement preparedStatement =
-                    connection.prepareStatement("SELECT * FROM person WHERE id=?");
-
-            preparedStatement.setInt(1, id);
-
-            ResultSet resultSet = preparedStatement.executeQuery();
-            resultSet.next();
-
-            person = new Person();
-            person.setId(resultSet.getInt("id"));
-            person.setName(resultSet.getString("name"));
-            person.setSurname(resultSet.getString("surname"));
-            person.setEmail(resultSet.getString("email"));
-
-
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-
-        return person;
+        return jdbcTemplate.query("SELECT * FROM person WHERE id=?", new Object[]{id}, new PersonMapper())
+                .stream().findAny().orElse(null);
     }
 
     public void save(Person person) {
-        try {
-            PreparedStatement preparedStatement =
-                    connection.prepareStatement("INSERT INTO person VALUES (1, ?, ?, ?)");
-
-            preparedStatement.setString(1, person.getName());
-            preparedStatement.setString(2, person.getSurname());
-            preparedStatement.setString(3, person.getEmail());
-
-            preparedStatement.executeUpdate();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
+        jdbcTemplate.update("INSERT INTO person VALUES(1,?,?,?)",
+                person.getName(), person.getSurname(), person.getEmail());
     }
 
     public void update(int id, Person updatedPerson) {
-        try {
-            PreparedStatement preparedStatement =
-                    connection.prepareStatement("UPDATE person SET name=?, surname=?, email=? WHERE id=?");
-
-            preparedStatement.setString(1, updatedPerson.getName());
-            preparedStatement.setString(2, updatedPerson.getSurname());
-            preparedStatement.setString(3, updatedPerson.getEmail());
-            preparedStatement.setInt(4, id);
-
-            preparedStatement.executeUpdate();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
+        jdbcTemplate.update("UPDATE person SET name=?, surname=?, email=? WHERE id=?",
+                updatedPerson.getName(), updatedPerson.getSurname(), updatedPerson.getEmail(), id);
     }
 
     public void delete(int id) {
-        try {
-            PreparedStatement preparedStatement =
-                    connection.prepareStatement("DELETE FROM person WHERE id=?");
-            preparedStatement.setInt(1, id);
-
-            preparedStatement.executeUpdate();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
+        jdbcTemplate.update("DELETE FROM person WHERE id=?", id);
     }
 
 }
