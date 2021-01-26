@@ -1,10 +1,15 @@
 package com.github.vasyapogoriliy.onlinestore.models;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
 public class Person {
+
+    @Id
+    @GeneratedValue
     private int id;
 
     @NotEmpty(message = "empty name")
