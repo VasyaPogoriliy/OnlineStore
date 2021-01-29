@@ -1,0 +1,15 @@
+<html lang="en" xmlns:th="http://thymeleaf.org">
+
+<h1 class="my-4">SmarTech</h1>
+
+<div class="list-group">
+
+    <div th:each="category : ${categories}">
+        <a th:href="@{/show/category/{id}/products(id=${category.getId()})}" class="list-group-item"
+           th:text="${category.getName()}" th:id="${category.getName()}">Category</a>
+    </div>
+
+</div>
+
+
+</html>
